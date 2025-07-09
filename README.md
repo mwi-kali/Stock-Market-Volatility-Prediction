@@ -5,6 +5,7 @@ A lightweight, modular pipeline for forecasting stock market volatility by combi
 ## Project Structure
 
 ```
+Stock-Market-Volatility-Prediction/
 ├── data/
 │   ├── raw/             
 │   └── processed/      
