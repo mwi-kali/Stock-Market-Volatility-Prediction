@@ -1,4 +1,5 @@
 import feedparser
+import re
 import requests
 
 
@@ -60,17 +61,29 @@ class NewsFetcher:
     def fetch_rss(self) -> pd.DataFrame:
         logger.info("Fetching news from RSS feeds")
         records = []
+
+        pattern = re.compile(re.escape(self.query), re.IGNORECASE)
+
         for url in self.RSS_URLS:
             feed = feedparser.parse(url)
             for entry in feed.entries:
                 pub = getattr(entry, "published", None) or getattr(entry, "updated", None)
                 if not pub:
                     continue
+
+                title = entry.get("title", "")
+                summary = entry.get("summary", "")
+                content = f"{title} {summary}".strip()
+
+                if not pattern.search(content):
+                    continue
+
                 records.append({
                     "Date": pd.to_datetime(pub).date(),
-                    "Content": f"{entry.get('title','')} {entry.get('summary','')}".strip(),
+                    "Content": content,
                     "Source": feed.feed.get("title", url)
                 })
+
         return pd.DataFrame(records)
 
     def fetch_all(self) -> pd.DataFrame:
