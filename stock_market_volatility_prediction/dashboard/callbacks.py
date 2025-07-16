@@ -41,11 +41,11 @@ def update_dashboard(n_intervals):
     Xs = np.array([X_scaled[i - window : i] for i in range(window, len(X_scaled))])
     pad = [np.nan] * window
 
-    lstm = LSTMModel.load("models/lstm.h5")
+    lstm = LSTMModel.load("trained_models/lstm.h5")
     preds_lstm = lstm.predict(Xs).squeeze()
     preds_lstm_full = np.array(pad + preds_lstm.tolist())
 
-    with open("models/arima.pkl", "rb") as f:
+    with open("trained_models/arima.pkl", "rb") as f:
         arima_model = pickle.load(f)
     try:
         preds_arima_full = arima_model.predict(start=0, end=len(actual) - 1)
@@ -53,7 +53,7 @@ def update_dashboard(n_intervals):
     except Exception:
         preds_arima_full = np.full(len(actual), np.nan)
 
-    with open("models/prophet.pkl", "rb") as f:
+    with open("trained_models/prophet.pkl", "rb") as f:
         prophet_model = pickle.load(f)
     df_prophet = pd.DataFrame({"ds": dates, "y": actual})
     forecast = prophet_model.predict(df_prophet)
