@@ -27,21 +27,21 @@ from stock_market_volatility_prediction.models.training import train_arima, trai
 from stock_market_volatility_prediction.utils.config import config
 
 
-PARAMS_PATH = "models/best_params.json"
+PARAMS_PATH = "trained_models/best_params.json"
 
 
 @click.command()
-@click.option("--start",       default=config.START_DATE, help="Data start date (YYYY-MM-DD)")
-@click.option("--window",      default=10,    type=int, help="LSTM sliding window size")
-@click.option("--tune-trials", default=30,    type=int, help="Number of Optuna trials per model")
+@click.option("--start", default=config.START_DATE, help="Data start date (YYYY-MM-DD)")
+@click.option("--window", default=10, type=int, help="LSTM sliding window size")
+@click.option("--tune-trials", default=30, type=int, help="Number of Optuna trials per model")
 def main(start: str, window: int, tune_trials: int):
     mlflow.set_experiment("VolatilityForecasting")
     with mlflow.start_run():
         end = date.today().isoformat()
         mlflow.log_params({
             "start_date": start,
-            "end_date":   end,
-            "window":     window,
+            "end_date": end,
+            "window": window,
             "tune_trials": tune_trials
         })
 
@@ -53,9 +53,9 @@ def main(start: str, window: int, tune_trials: int):
         stock_df.to_csv("data/raw/stock.csv", index=False)
         news_df.to_csv("data/raw/news.csv", index=False)
         macro_df.to_csv("data/raw/macro.csv", index=False)
-        mlflow.log_artifact("data/raw/stock.csv",   artifact_path="raw")
-        mlflow.log_artifact("data/raw/news.csv",    artifact_path="raw")
-        mlflow.log_artifact("data/raw/macro.csv",   artifact_path="raw")
+        mlflow.log_artifact("data/raw/stock.csv", artifact_path="raw")
+        mlflow.log_artifact("data/raw/news.csv", artifact_path="raw")
+        mlflow.log_artifact("data/raw/macro.csv", artifact_path="raw")
 
         fe = FeatureEngineer()
         tech_df = fe.add_technical(stock_df)
@@ -103,22 +103,22 @@ def main(start: str, window: int, tune_trials: int):
         tuned["prophet"] = prophet_params
         mlflow.log_params({f"prophet_{k}": v for k, v in prophet_params.items()})
 
-        os.makedirs("models", exist_ok=True)
+        os.makedirs("trained_models", exist_ok=True)
         with open(PARAMS_PATH, "w") as f:
             json.dump(tuned, f, indent=2)
-        mlflow.log_artifact(PARAMS_PATH, artifact_path="models")
+        mlflow.log_artifact(PARAMS_PATH, artifact_path="trained_models")
 
         click.echo("Training LSTM on full data...")
-        lstm = train_lstm(Xs, ys, tuned["lstm"], save_path="models/lstm.h5")
-        mlflow.keras.log_model(lstm.model, artifact_path="models/lstm")
+        lstm = train_lstm(Xs, ys, tuned["lstm"], save_path="trained_models/lstm.h5")
+        mlflow.keras.log_model(lstm.model, artifact_path="trained_models/lstm")
 
         click.echo("Training ARIMA on full data...")
-        arima = train_arima(pd.Series(y), tuned["arima"], save_path="models/arima.pkl")
-        mlflow.log_artifact("models/arima.pkl", artifact_path="models")
+        arima = train_arima(pd.Series(y), tuned["arima"], save_path="trained_models/arima.pkl")
+        mlflow.log_artifact("trained_models/arima.pkl", artifact_path="trained_models")
 
         click.echo("Training Prophet on full data...")
-        prophet = train_prophet(final_df["Date"], pd.Series(y), tuned["prophet"], save_path="models/prophet.pkl")
-        mlflow.log_artifact("models/prophet.pkl", artifact_path="models")
+        prophet = train_prophet(final_df["Date"], pd.Series(y), tuned["prophet"], save_path="trained_models/prophet.pkl")
+        mlflow.log_artifact("trained_models/prophet.pkl", artifact_path="trained_models")
 
         preds_lstm = lstm.predict(Xs).squeeze()
         mse_lstm = mean_squared_error(ys, preds_lstm)
