@@ -23,5 +23,5 @@ class FeatureSelector:
         imp = permutation_importance(model, X, y, n_repeats=5, random_state=42)
         scores = pd.Series(imp.importances_mean, index=X.columns)
         selected = scores[scores > self.threshold].index.tolist()
-        logger.info(f"Selected features: {selected}")
+        logger.info(f"Selected features are {selected}")
         return selected
