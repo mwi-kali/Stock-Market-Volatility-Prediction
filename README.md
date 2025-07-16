@@ -22,7 +22,7 @@ Stock-Market-Volatility-Prediction/
 │   ├── models/          
 │   ├── dashboard/       
 │   └── utils/            
-├── models/           
+├── trained_models/           
 ├── setup.py    
 ├── requirements.txt 
 └── README.md              
