@@ -13,7 +13,7 @@ from stock_market_volatility_prediction.models.training import (
     train_lstm, train_arima, train_prophet
 )
 
-PARAMS_PATH = "models/best_params.json"
+PARAMS_PATH = "trained_models/best_params.json"
 
 @click.command()
 @click.option(
@@ -45,7 +45,7 @@ def main(mode: str, window: int):
     Xs = np.array(Xs)
     ys = np.array(ys)
 
-    os.makedirs("models", exist_ok=True)
+    os.makedirs("trained_models", exist_ok=True)
 
     if mode.lower() == "tune":
         val_size = max(10, int(len(vol_series)*0.2))
@@ -78,13 +78,13 @@ def main(mode: str, window: int):
         }
 
     click.echo("Training LSTM...")
-    train_lstm(Xs, ys, best["lstm"], save_path="models/lstm.h5")
+    train_lstm(Xs, ys, best["lstm"], save_path="trained_models/lstm.h5")
 
     click.echo("Training ARIMA...")
-    train_arima(vol_series, best["arima"], save_path="models/arima.pkl")
+    train_arima(vol_series, best["arima"], save_path="trained_models/arima.pkl")
 
     click.echo("Training Prophet...")
-    train_prophet(dates, vol_series, best["prophet"], save_path="models/prophet.pkl")
+    train_prophet(dates, vol_series, best["prophet"], save_path="trained_models/prophet.pkl")
 
     click.echo("All models trained with tuned hyperparameters!")
 
