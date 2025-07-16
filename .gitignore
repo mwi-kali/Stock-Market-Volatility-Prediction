@@ -2,7 +2,6 @@ data/
 *.egg-info
 logs/
 mlruns
-models/
 *.pyc
 __pycache__/
 trained_models/
